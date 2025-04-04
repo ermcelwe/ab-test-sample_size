@@ -34,7 +34,10 @@
             Calculate Sample Size
         </button>
         
-        <div id="result" class="mt-6 text-center font-bold text-green-600"></div>
+        <div id="result" class="mt-6 text-center">
+            <div id="sample-size" class="font-bold text-green-600"></div>
+            <div id="weeks-to-run" class="font-bold text-blue-600 mt-2"></div>
+        </div>
         <div id="error" class="mt-6 text-center text-red-500"></div>
     </div>
 
@@ -45,11 +48,13 @@
             const variations = parseInt(document.getElementById('variations').value);
             const sampleSizePerDay = parseInt(document.getElementById('sample-size-per-day').value);
             
-            const resultEl = document.getElementById('result');
+            const sampleSizeEl = document.getElementById('sample-size');
+            const weeksToRunEl = document.getElementById('weeks-to-run');
             const errorEl = document.getElementById('error');
             
             // Clear previous results
-            resultEl.textContent = '';
+            sampleSizeEl.textContent = '';
+            weeksToRunEl.textContent = '';
             errorEl.textContent = '';
 
             try {
@@ -96,9 +101,13 @@
 
                 // Minimum days required
                 const minimumDays = Math.ceil(totalSampleSize / sampleSizePerDay);
+
+                // Minimum weeks required
+                const minimumWeeks = Math.ceil(minimumDays / 7);
                 
-                // Display result
-                resultEl.textContent = `Total Sample Size: ${totalSampleSize.toLocaleString()}`;
+                // Display results
+                sampleSizeEl.textContent = `Total Sample Size: ${totalSampleSize.toLocaleString()}`;
+                weeksToRunEl.textContent = `Minimum Test Duration: ${minimumWeeks} weeks (${minimumDays} days)`;
             } catch (error) {
                 errorEl.textContent = error.message;
             }
