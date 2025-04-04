@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B Test Sample Size Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="container mx-auto max-w-md p-6 bg-white shadow-lg rounded-lg">
+        <h2 class="text-2xl font-bold mb-6 text-center">A/B Test Sample Size Calculator</h2>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Baseline conversion rate (%)</label>
+            <input type="number" id="baseline-rate" class="w-full px-3 py-2 border rounded" value="2.5" step="0.1">
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Expected uplift in conversion rate (%)</label>
+            <input type="number" id="expected-uplift" class="w-full px-3 py-2 border rounded" value="5" step="0.1">
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Number of variations in test</label>
+            <input type="number" id="variations" class="w-full px-3 py-2 border rounded" value="2" min="1">
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-gray-700 mb-2">Average sample size per day</label>
+            <input type="number" id="sample-size-per-day" class="w-full px-3 py-2 border rounded" value="15000" min="1">
+        </div>
+        
+        <button id="calculate-btn" class="w-full bg-blue-500 text-white py-3 rounded hover:bg-blue-600 transition duration-300">
+            Calculate Sample Size
+        </button>
+        
+        <div id="result" class="mt-6 text-center font-bold text-green-600"></div>
+        <div id="error" class="mt-6 text-center text-red-500"></div>
+    </div>
+
+    <script>
+        document.getElementById('calculate-btn').addEventListener('click', function() {
+            const baselineRate = parseFloat(document.getElementById('baseline-rate').value) / 100;
+            const expectedUplift = parseFloat(document.getElementById('expected-uplift').value) / 100;
+            const variations = parseInt(document.getElementById('variations').value);
+            const sampleSizePerDay = parseInt(document.getElementById('sample-size-per-day').value);
+            
+            const resultEl = document.getElementById('result');
+            const errorEl = document.getElementById('error');
+            
+            // Clear previous results
+            resultEl.textContent = '';
+            errorEl.textContent = '';
+
+            try {
+                // Validate inputs
+                if (baselineRate <= 0 || baselineRate >= 1) {
+                    throw new Error('Baseline rate must be between 0 and 100%');
+                }
+                if (expectedUplift <= 0) {
+                    throw new Error('Expected uplift must be positive');
+                }
+                if (variations < 1) {
+                    throw new Error('Number of variations must be at least 1');
+                }
+                if (sampleSizePerDay < 1) {
+                    throw new Error('Sample size per day must be positive');
+                }
+
+                // Standard A/B testing sample size calculation
+                // Power Analysis Constants
+                const alpha = 0.05; // significance level (5%)
+                const power = 0.80; // statistical power (80%)
+
+                // Z-scores for two-tailed test
+                const zAlpha = 1.96; // for 95% confidence
+                const zBeta = 0.84; // for 80% power
+
+                // Baseline conversion rate
+                const p1 = baselineRate;
+                
+                // Expected new conversion rate
+                const p2 = baselineRate * (1 + expectedUplift);
+
+                // Pooled proportion
+                const pPooled = (p1 + p2) / 2;
+
+                // Sample size per group calculation
+                const nPerGroup = Math.ceil(
+                    (Math.pow(zAlpha + zBeta, 2) * pPooled * (1 - pPooled)) / 
+                    Math.pow(p2 - p1, 2)
+                );
+
+                // Total sample size (accounting for number of variations)
+                const totalSampleSize = nPerGroup * variations;
+
+                // Minimum days required
+                const minimumDays = Math.ceil(totalSampleSize / sampleSizePerDay);
+                
+                // Display result
+                resultEl.textContent = `Total Sample Size: ${totalSampleSize.toLocaleString()}`;
+            } catch (error) {
+                errorEl.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>
